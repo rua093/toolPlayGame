@@ -503,7 +503,7 @@ public class ToolPlayGame {
         // ========= LẦN ĐẦU =========
         if (myTick) {
             Log.d(TAG, "Đợi lần đầu");
-            SystemClock.sleep(getRandom(15000, 20000)); // giảm còn 30–40s
+            SystemClock.sleep(getRandom(20000, 30000)); // giảm còn 30–40s
             Log.d(TAG, "Đợi xong");
             d.pressBack();
             myTick = false;
@@ -563,7 +563,7 @@ public class ToolPlayGame {
             if (!isGameViewVisible(d)) {
                 handlePoint.loopRightPoint(d);
             }
-            List<String> texts = new ArrayList<>(Arrays.asList("See next","Stay and continue"));
+            List<String> texts = new ArrayList<>(Arrays.asList("See next","Stay and continue", "Continue", "See Next" ));
             List<android.graphics.Rect> findText = findByText(d, texts);
             for (android.graphics.Rect r : findText){
                 clickXYAndReturnIfNeeded(d, getRandom(r.centerX()-5,r.centerX()+5), getRandom(r.centerY()-5,r.centerY()+5));
@@ -572,7 +572,7 @@ public class ToolPlayGame {
                 }
             }
             Log.d(TAG, "Không quay lại game → đợi 10s rồi lặp lại");
-            SystemClock.sleep(5000); // Mỗi 10 giây chụp 1 lần
+            SystemClock.sleep(10000); // Mỗi 10 giây chụp 1 lần
         }
 
         // ========= HẾT THỜI GIAN =========
@@ -597,7 +597,7 @@ public class ToolPlayGame {
                 .build();
 
         Request request = new Request.Builder()
-                .url("http://192.168.0.112:8000/detect")
+                .url("http://160.25.81.154:8999/detect")
                 .post(requestBody)
                 .addHeader("Connection", "close")
                 .build();
