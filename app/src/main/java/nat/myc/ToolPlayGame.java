@@ -323,11 +323,11 @@ public class ToolPlayGame {
         SystemClock.sleep(getRandom(500,700)); // chờ UI phản hồi
 
         if (!d.hasObject(By.pkg(PKG_GAME).depth(0))) {
-            SystemClock.sleep(getRandom(1200,2000));
+            SystemClock.sleep(getRandom(800,1000));
             Log.d(TAG, "clickXYAndReturnIfNeeded: đã rời game -> pressBack() tối đa 3 lần");
             for (int i = 0; i < 3; i++) {
                 d.pressBack();
-                SystemClock.sleep(getRandom(500,1000));
+                SystemClock.sleep(getRandom(400,500));
                 if (d.hasObject(By.pkg(PKG_GAME).depth(0))) {
                     Log.d(TAG, "clickXYAndReturnIfNeeded: quay lại game sau back #" + (i + 1));
                     return 1;
@@ -497,13 +497,26 @@ public class ToolPlayGame {
 
         return success;
     }
+   
+List<Point> points = null;
+
+        
     private void handleAds(UiDevice d, long timeoutMs) throws Exception {
+        points = new ArrayList<>();
+        points.add(new Point(1025, 46));
+        points.add(new Point(1016, 59));
+        points.add(new Point(1000, 75));
+        points.add(new Point(1029, 128));
+        points.add(new Point(708, 1107));
+        points.add(new Point(554, 1345));
+        points.add(new Point(65, 65));
+        points.add(new Point(880, 641));
         long deadline = SystemClock.uptimeMillis() + timeoutMs;
 
         // ========= LẦN ĐẦU =========
         if (myTick) {
             Log.d(TAG, "Đợi lần đầu");
-            SystemClock.sleep(getRandom(20000, 30000)); // giảm còn 30–40s
+            SystemClock.sleep(getRandom(40000, 45000)); // giảm còn 30–40s
             Log.d(TAG, "Đợi xong");
             d.pressBack();
             myTick = false;
@@ -519,60 +532,70 @@ public class ToolPlayGame {
                 return;
             }
 
-            Log.d(TAG, "Chụp ảnh và gửi về server...");
-            Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
-            File dir = context.getExternalCacheDir();
-            if (dir != null && !dir.exists()) {
-                dir.mkdirs();  // tạo thư mục nếu chưa tồn tại
-            }
-
-            File screenshot = new File(dir, "screenshot.png");
-            boolean success = d.takeScreenshot(screenshot);
-            if (!success) {
-                Log.e(TAG, "Chụp màn hình thất bại");
-            }
-            Log.d(TAG, "Screenshot path: " + screenshot.getAbsolutePath());
-            // 2. Gửi ảnh đến API server
-            List<Rect> boxes = callApiDetectBoundingBox(screenshot);
-
-            Log.d(TAG, "Số lượng bounding box nhận từ server: " + boxes.size());
-
-            // 3. Nếu server trả về các box → bấm thử từng box
-            int idx = 0;
-            for (Rect r : boxes) {
-
-                int x = r.centerX();
-                int y = r.centerY();
-                int xx = getRandom(x - 5, x + 5);
-                int yy = getRandom(y - 5, y + 5);
-
-                Log.d(TAG, "Tap box " + idx++ + " tại: (" + xx + "," + yy + ")");
-                clickXYAndReturnIfNeeded(d, xx, yy);
-
-                SystemClock.sleep(getRandom(1500, 2500));
-
+            for(Point p : points){
+                Log.d(TAG, "Thử nhấn vào điểm trong danh sách: (" + p.x + "," + p.y + ")");
+                clickXYAndReturnIfNeeded(d, getRandom(p.x-5,p.x+5), getRandom(p.y-5,p.y+5));
+                SystemClock.sleep(getRandom(500,1500));
                 if (isGameViewVisible(d)) {
-                    Log.d(TAG,"Lưu vào mảng điểm: ("+xx+","+yy+")"); handlePoint.addPointRight(xx,yy);
-                    Log.d(TAG, "Đã quay lại game → return");
-                    return;
-                } else {
-                    d.pressBack();
-                }
-
-            }
-            if (!isGameViewVisible(d)) {
-                handlePoint.loopRightPoint(d);
-            }
-            List<String> texts = new ArrayList<>(Arrays.asList("See next","Stay and continue", "Continue", "See Next" ));
-            List<android.graphics.Rect> findText = findByText(d, texts);
-            for (android.graphics.Rect r : findText){
-                clickXYAndReturnIfNeeded(d, getRandom(r.centerX()-5,r.centerX()+5), getRandom(r.centerY()-5,r.centerY()+5));
-                if (isGameViewVisible(d)) {
+                    Log.d(TAG, "Đã quay lại game sau khi nhấn điểm trong danh sách.");
                     return;
                 }
             }
-            Log.d(TAG, "Không quay lại game → đợi 10s rồi lặp lại");
-            SystemClock.sleep(10000); // Mỗi 10 giây chụp 1 lần
+            SystemClock.sleep(1000);
+            // Log.d(TAG, "Chụp ảnh và gửi về server...");
+            // Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+            // File dir = context.getExternalCacheDir();
+            // if (dir != null && !dir.exists()) {
+            //     dir.mkdirs();  // tạo thư mục nếu chưa tồn tại
+            // }
+
+            // File screenshot = new File(dir, "screenshot.png");
+            // boolean success = d.takeScreenshot(screenshot);
+            // if (!success) {
+            //     Log.e(TAG, "Chụp màn hình thất bại");
+            // }
+            // Log.d(TAG, "Screenshot path: " + screenshot.getAbsolutePath());
+            // // 2. Gửi ảnh đến API server
+            // List<Rect> boxes = callApiDetectBoundingBox(screenshot);
+
+            // Log.d(TAG, "Số lượng bounding box nhận từ server: " + boxes.size());
+
+            // // 3. Nếu server trả về các box → bấm thử từng box
+            // int idx = 0;
+            // for (Rect r : boxes) {
+
+            //     int x = r.centerX();
+            //     int y = r.centerY();
+            //     int xx = getRandom(x - 5, x + 5);
+            //     int yy = getRandom(y - 5, y + 5);
+
+            //     Log.d(TAG, "Tap box " + idx++ + " tại: (" + xx + "," + yy + ")");
+            //     clickXYAndReturnIfNeeded(d, xx, yy);
+
+            //     SystemClock.sleep(getRandom(1500, 2500));
+
+            //     if (isGameViewVisible(d)) {
+            //         Log.d(TAG,"Lưu vào mảng điểm: ("+xx+","+yy+")"); handlePoint.addPointRight(xx,yy);
+            //         Log.d(TAG, "Đã quay lại game → return");
+            //         return;
+            //     } else {
+            //         d.pressBack();
+            //     }
+
+            // }
+            // if (!isGameViewVisible(d)) {
+            //     handlePoint.loopRightPoint(d);
+            // }
+            // List<String> texts = new ArrayList<>(Arrays.asList("See next","Stay and continue", "Continue", "See Next" ));
+            // List<android.graphics.Rect> findText = findByText(d, texts);
+            // for (android.graphics.Rect r : findText){
+            //     clickXYAndReturnIfNeeded(d, getRandom(r.centerX()-5,r.centerX()+5), getRandom(r.centerY()-5,r.centerY()+5));
+            //     if (isGameViewVisible(d)) {
+            //         return;
+            //     }
+            // }
+            // Log.d(TAG, "Không quay lại game → đợi 10s rồi lặp lại");
+            // SystemClock.sleep(10000); // Mỗi 10 giây chụp 1 lần
         }
 
         // ========= HẾT THỜI GIAN =========
